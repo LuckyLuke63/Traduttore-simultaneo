@@ -401,7 +401,17 @@
             // Non pronunciare testi troppo corti o vuoti
             if (!text || text.length < 3) return;
             
-            const utterance = new SpeechSynthesisUtterance(text);
+            // Pulisci il testo da caratteri problematici e artefatti
+            let cleanText = text
+                .replace(/[\*\#\@\$\%\^\&\(\)\[\]\{\}]/g, '') // Rimuovi caratteri speciali
+                .replace(/\s+/g, ' ') // Normalizza spazi multipli
+                .replace(/\.{2,}/g, '.') // Normalizza puntini multipli
+                .trim();
+            
+            // Non pronunciare se il testo pulito è troppo corto
+            if (cleanText.length < 3) return;
+            
+            const utterance = new SpeechSynthesisUtterance(cleanText);
             
             // Mappa dei codici lingua per la sintesi vocale
             const voiceLangMap = {
@@ -421,6 +431,11 @@
             utterance.rate = 0.9;
             utterance.pitch = 1;
             utterance.volume = 1;
+            
+            // Ferma la sintesi appena finisce, senza suoni extra
+            utterance.onend = () => {
+                synthesis.cancel();
+            };
             
             synthesis.speak(utterance);
         }
