@@ -266,12 +266,20 @@
             </button>
         </div>
 
+        <div class="controls" style="margin-top: 15px;">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                <input type="checkbox" id="autoSpeak" checked style="width: 20px; height: 20px; cursor: pointer;">
+                <span style="color: #333; font-weight: 600;">🔊 Pronuncia automaticamente la traduzione</span>
+            </label>
+        </div>
+
         <div id="status"></div>
     </div>
 
     <script>
         let recognition;
         let isListening = false;
+        let synthesis = window.speechSynthesis;
 
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
@@ -281,6 +289,7 @@
         const status = document.getElementById('status');
         const sourceLang = document.getElementById('sourceLang');
         const targetLang = document.getElementById('targetLang');
+        const autoSpeak = document.getElementById('autoSpeak');
 
         // Verifica supporto API Speech Recognition
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -351,7 +360,13 @@
                 const data = await response.json();
                 
                 if (data.responseData && data.responseData.translatedText) {
-                    translatedText.textContent = data.responseData.translatedText;
+                    const translation = data.responseData.translatedText;
+                    translatedText.textContent = translation;
+                    
+                    // Pronuncia la traduzione se l'opzione è attiva
+                    if (autoSpeak.checked) {
+                        speakText(translation, targetLangCode);
+                    }
                 } else {
                     translatedText.textContent = 'Errore nella traduzione';
                 }
@@ -359,6 +374,34 @@
                 console.error('Errore traduzione:', error);
                 translatedText.textContent = 'Errore di connessione';
             }
+        }
+
+        function speakText(text, lang) {
+            // Ferma eventuali sintesi in corso
+            synthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // Mappa dei codici lingua per la sintesi vocale
+            const voiceLangMap = {
+                'en': 'en-US',
+                'it': 'it-IT',
+                'es': 'es-ES',
+                'fr': 'fr-FR',
+                'de': 'de-DE',
+                'pt': 'pt-PT',
+                'ru': 'ru-RU',
+                'zh': 'zh-CN',
+                'ja': 'ja-JP',
+                'ar': 'ar-SA'
+            };
+            
+            utterance.lang = voiceLangMap[lang] || lang;
+            utterance.rate = 0.9; // Velocità leggermente più lenta per chiarezza
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            
+            synthesis.speak(utterance);
         }
 
         startBtn.addEventListener('click', () => {
@@ -374,6 +417,7 @@
             if (recognition) {
                 recognition.stop();
             }
+            synthesis.cancel(); // Ferma anche la sintesi vocale
             startBtn.style.display = 'flex';
             stopBtn.style.display = 'none';
             status.className = 'status';
