@@ -552,11 +552,15 @@
 
             recognition.onend = () => {
     if (isListening) {
-        isListening = false;
-        startBtn.style.display = 'flex';
-        stopBtn.style.display = 'none';
-        status.className = 'status';
-        status.textContent = '⏸️ Riconoscimento terminato. Clicca per riavviare.';
+        setTimeout(() => {
+            if (isListening) {
+                try {
+                    recognition.start();
+                } catch (error) {
+                    console.log('Riavvio riconoscimento saltato');
+                }
+            }
+        }, 500);
     }
 };
     }
