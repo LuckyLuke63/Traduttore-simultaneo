@@ -18,7 +18,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 15px;
+            padding: 20px;
         }
 
         .container {
@@ -204,6 +204,10 @@
                 gap: 6px;
             }
 
+            button span:last-child {
+                display: none;
+            }
+
             button {
                 min-width: 50px;
                 justify-content: center;
@@ -258,7 +262,7 @@
 
         @media (max-width: 768px) {
             .status {
-                margin-top: 5px;
+                margin-top: 10px;
                 padding: 8px;
                 font-size: 0.85em;
             }
@@ -551,20 +555,18 @@
             };
 
             recognition.onend = () => {
-    if (isListening) {
-        setTimeout(() => {
-            if (isListening) {
-                try {
-                    recognition.start();
-                } catch (error) {
-                    console.log('Riavvio riconoscimento saltato');
+                if (isListening) {
+                    setTimeout(() => {
+                        if (isListening) {
+                            try {
+                                recognition.start();
+                            } catch (error) {
+                                console.log('Riavvio riconoscimento saltato');
+                            }
+                        }
+                    }, 500);
                 }
-            }
-        }, 500);
-    }
-};
-    }
-};
+            };
         }
 
         async function translateText(text, shouldSpeak = true) {
@@ -598,7 +600,7 @@
 
         function speakText(text, lang) {
             // Non pronunciare testi troppo corti o vuoti
-            if (!text || text.length < 2) return;
+            if (!text || text.length < 3) return;
             
             // Pulisci il testo da caratteri problematici e artefatti
             let cleanText = text
@@ -609,7 +611,7 @@
                 .trim();
             
             // Non pronunciare se il testo pulito è troppo corto
-            if (cleanText.length < 2) return;
+            if (cleanText.length < 3) return;
             
             // Aspetta un momento per assicurarsi che il sistema sia pronto
             setTimeout(() => {
@@ -637,29 +639,6 @@
                     };
                     
                     utterance.lang = voiceLangMap[lang] || lang;
-
-                    // AGGIUNGI QUESTA PARTE per selezionare voce maschile
-            const voices = synthesis.getVoices();
-            const targetLang = voiceLangMap[lang] || lang;
-            
-            // Cerca una voce maschile nella lingua target
-            const maleVoice = voices.find(voice => 
-                voice.lang.startsWith(targetLang.split('-')[0]) && 
-                (voice.name.toLowerCase().includes('male') || 
-                 voice.name.toLowerCase().includes('man') ||
-                 voice.name.toLowerCase().includes('masculine'))
-            );
-            
-            // Se non trova voce maschile, cerca qualsiasi voce nella lingua giusta
-            if (maleVoice) {
-                utterance.voice = maleVoice;
-            } else {
-                const anyVoice = voices.find(voice => 
-                    voice.lang.startsWith(targetLang.split('-')[0])
-                );
-                if (anyVoice) utterance.voice = anyVoice;
-            }
-                    
                     utterance.rate = 0.95;
                     utterance.pitch = 1;
                     utterance.volume = 0.9; // Volume leggermente ridotto
