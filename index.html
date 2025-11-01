@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traduttore Simultaneo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .language-selector {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .lang-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .lang-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        select:hover {
+            border-color: #764ba2;
+        }
+
+        .translation-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .text-box {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 200px;
+            position: relative;
+        }
+
+        .text-box h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .text-content {
+            color: #333;
+            line-height: 1.6;
+            font-size: 1.1em;
+            min-height: 150px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .status.listening {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 768px) {
+            .translation-area {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.5em;
+            }
+        }
+
+        .indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #28a745;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Traduttore Simultaneo</h1>
+        <p class="subtitle">Parla nella tua lingua e ascolta la traduzione in tempo reale</p>
+
+        <div class="language-selector">
+            <div class="lang-group">
+                <label for="sourceLang">Parli in:</label>
+                <select id="sourceLang">
+                    <option value="it-IT">Italiano</option>
+                    <option value="en-US">Inglese</option>
+                    <option value="es-ES">Spagnolo</option>
+                    <option value="fr-FR">Francese</option>
+                    <option value="de-DE">Tedesco</option>
+                    <option value="pt-PT">Portoghese</option>
+                    <option value="ru-RU">Russo</option>
+                    <option value="zh-CN">Cinese</option>
+                    <option value="ja-JP">Giapponese</option>
+                    <option value="ar-SA">Arabo</option>
+                </select>
+            </div>
+            <div class="lang-group">
+                <label for="targetLang">Traduci in:</label>
+                <select id="targetLang">
+                    <option value="en">Inglese</option>
+                    <option value="it">Italiano</option>
+                    <option value="es">Spagnolo</option>
+                    <option value="fr">Francese</option>
+                    <option value="de">Tedesco</option>
+                    <option value="pt">Portoghese</option>
+                    <option value="ru">Russo</option>
+                    <option value="zh">Cinese</option>
+                    <option value="ja">Giapponese</option>
+                    <option value="ar">Arabo</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="translation-area">
+            <div class="text-box">
+                <h3>📢 Testo Originale</h3>
+                <div class="text-content" id="originalText">In attesa di parlare...</div>
+            </div>
+            <div class="text-box">
+                <h3>🔄 Traduzione</h3>
+                <div class="text-content" id="translatedText">La traduzione apparirà qui...</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="startBtn" class="btn-primary">
+                <span>🎤</span>
+                <span>Inizia ad Ascoltare</span>
+            </button>
+            <button id="stopBtn" class="btn-danger" style="display: none;">
+                <span>⏹️</span>
+                <span>Ferma</span>
+            </button>
+            <button id="clearBtn" class="btn-secondary">
+                <span>🗑️</span>
+                <span>Pulisci</span>
+            </button>
+        </div>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        let recognition;
+        let isListening = false;
+
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const originalText = document.getElementById('originalText');
+        const translatedText = document.getElementById('translatedText');
+        const status = document.getElementById('status');
+        const sourceLang = document.getElementById('sourceLang');
+        const targetLang = document.getElementById('targetLang');
+
+        // Verifica supporto API Speech Recognition
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            status.className = 'status error';
+            status.textContent = '❌ Il tuo browser non supporta il riconoscimento vocale. Prova con Chrome o Edge.';
+            startBtn.disabled = true;
+        }
+
+        function initRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = sourceLang.value;
+
+            recognition.onstart = () => {
+                isListening = true;
+                startBtn.style.display = 'none';
+                stopBtn.style.display = 'flex';
+                status.className = 'status listening';
+                status.innerHTML = '<span class="indicator pulse"></span>In ascolto...';
+            };
+
+            recognition.onresult = async (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript + ' ';
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                if (finalTranscript) {
+                    originalText.textContent = finalTranscript;
+                    await translateText(finalTranscript);
+                } else if (interimTranscript) {
+                    originalText.textContent = interimTranscript;
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Errore riconoscimento:', event.error);
+                status.className = 'status error';
+                status.textContent = `❌ Errore: ${event.error}`;
+            };
+
+            recognition.onend = () => {
+                if (isListening) {
+                    recognition.start(); // Riavvia automaticamente
+                }
+            };
+        }
+
+        async function translateText(text) {
+            try {
+                const sourceLangCode = sourceLang.value.split('-')[0];
+                const targetLangCode = targetLang.value;
+                
+                // Usa l'API MyMemory per la traduzione
+                const response = await fetch(
+                    `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLangCode}|${targetLangCode}`
+                );
+                
+                const data = await response.json();
+                
+                if (data.responseData && data.responseData.translatedText) {
+                    translatedText.textContent = data.responseData.translatedText;
+                } else {
+                    translatedText.textContent = 'Errore nella traduzione';
+                }
+            } catch (error) {
+                console.error('Errore traduzione:', error);
+                translatedText.textContent = 'Errore di connessione';
+            }
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (!recognition) {
+                initRecognition();
+            }
+            recognition.lang = sourceLang.value;
+            recognition.start();
+        });
+
+        stopBtn.addEventListener('click', () => {
+            isListening = false;
+            if (recognition) {
+                recognition.stop();
+            }
+            startBtn.style.display = 'flex';
+            stopBtn.style.display = 'none';
+            status.className = 'status';
+            status.textContent = '⏸️ Ascolto interrotto';
+        });
+
+        clearBtn.addEventListener('click', () => {
+            originalText.textContent = 'In attesa di parlare...';
+            translatedText.textContent = 'La traduzione apparirà qui...';
+            status.textContent = '';
+            status.className = 'status';
+        });
+
+        sourceLang.addEventListener('change', () => {
+            if (recognition && isListening) {
+                recognition.stop();
+                isListening = false;
+                setTimeout(() => {
+                    startBtn.click();
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>
