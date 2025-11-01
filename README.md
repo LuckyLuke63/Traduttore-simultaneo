@@ -1,0 +1,1 @@
+Traduttore simultaneo multilingue
