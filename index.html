@@ -280,6 +280,8 @@
         let recognition;
         let isListening = false;
         let synthesis = window.speechSynthesis;
+        let lastSpokenText = '';
+        let speechTimeout;
 
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
@@ -326,12 +328,27 @@
                     }
                 }
 
-                if (finalTranscript) {
-                    originalText.textContent = finalTranscript;
-                    await translateText(finalTranscript, true); // true = frase completa
-                } else if (interimTranscript) {
-                    originalText.textContent = interimTranscript;
-                    await translateText(interimTranscript, false); // false = non pronunciare
+                // Mostra sempre il testo in tempo reale
+                const currentText = finalTranscript || interimTranscript;
+                originalText.textContent = currentText;
+
+                // Traduci in tempo reale ma senza pronunciare
+                if (currentText) {
+                    await translateText(currentText, false);
+                }
+
+                // Se è una frase finale, prepara la pronuncia con un ritardo
+                if (finalTranscript && finalTranscript.trim() !== lastSpokenText.trim()) {
+                    clearTimeout(speechTimeout);
+                    speechTimeout = setTimeout(() => {
+                        if (autoSpeak.checked) {
+                            const textToSpeak = translatedText.textContent;
+                            if (textToSpeak && textToSpeak !== 'La traduzione apparirà qui...' && textToSpeak !== lastSpokenText) {
+                                lastSpokenText = textToSpeak;
+                                speakText(textToSpeak, targetLang.value);
+                            }
+                        }
+                    }, 800); // Aspetta 800ms di silenzio prima di pronunciare
                 }
             };
 
@@ -381,6 +398,9 @@
             // Ferma eventuali sintesi in corso
             synthesis.cancel();
             
+            // Non pronunciare testi troppo corti o vuoti
+            if (!text || text.length < 3) return;
+            
             const utterance = new SpeechSynthesisUtterance(text);
             
             // Mappa dei codici lingua per la sintesi vocale
@@ -398,7 +418,7 @@
             };
             
             utterance.lang = voiceLangMap[lang] || lang;
-            utterance.rate = 0.9; // Velocità leggermente più lenta per chiarezza
+            utterance.rate = 0.9;
             utterance.pitch = 1;
             utterance.volume = 1;
             
@@ -418,11 +438,13 @@
             if (recognition) {
                 recognition.stop();
             }
-            synthesis.cancel(); // Ferma anche la sintesi vocale
+            clearTimeout(speechTimeout);
+            synthesis.cancel();
             startBtn.style.display = 'flex';
             stopBtn.style.display = 'none';
             status.className = 'status';
             status.textContent = '⏸️ Ascolto interrotto';
+            lastSpokenText = '';
         });
 
         clearBtn.addEventListener('click', () => {
@@ -430,6 +452,9 @@
             translatedText.textContent = 'La traduzione apparirà qui...';
             status.textContent = '';
             status.className = 'status';
+            lastSpokenText = '';
+            clearTimeout(speechTimeout);
+            synthesis.cancel();
         });
 
         sourceLang.addEventListener('change', () => {
