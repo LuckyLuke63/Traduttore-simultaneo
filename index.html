@@ -551,10 +551,18 @@
             };
 
             recognition.onend = () => {
-                if (isListening) {
-                    recognition.start(); // Riavvia automaticamente
+    if (isListening) {
+        setTimeout(() => {
+            if (isListening) {
+                try {
+                    recognition.start();
+                } catch (error) {
+                    console.log('Riavvio riconoscimento saltato');
                 }
-            };
+            }
+        }, 500);
+    }
+};
         }
 
         async function translateText(text, shouldSpeak = true) {
