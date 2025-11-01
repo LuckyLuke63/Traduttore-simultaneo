@@ -328,9 +328,10 @@
 
                 if (finalTranscript) {
                     originalText.textContent = finalTranscript;
-                    await translateText(finalTranscript);
+                    await translateText(finalTranscript, true); // true = frase completa
                 } else if (interimTranscript) {
                     originalText.textContent = interimTranscript;
+                    await translateText(interimTranscript, false); // false = non pronunciare
                 }
             };
 
@@ -347,7 +348,7 @@
             };
         }
 
-        async function translateText(text) {
+        async function translateText(text, shouldSpeak = true) {
             try {
                 const sourceLangCode = sourceLang.value.split('-')[0];
                 const targetLangCode = targetLang.value;
@@ -363,8 +364,8 @@
                     const translation = data.responseData.translatedText;
                     translatedText.textContent = translation;
                     
-                    // Pronuncia la traduzione se l'opzione è attiva
-                    if (autoSpeak.checked) {
+                    // Pronuncia la traduzione solo se è una frase completa e l'opzione è attiva
+                    if (shouldSpeak && autoSpeak.checked) {
                         speakText(translation, targetLangCode);
                     }
                 } else {
